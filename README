@@ -1,0 +1,1 @@
+This C program I wrote in Winter 2010 renders high quality images of the Mandelbrot set. The algorithm uses smooth coloring, periodicity checking, main bulb checking, and image resampling. It is only accurate to 'long double' precision.
