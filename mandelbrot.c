@@ -67,8 +67,8 @@ void renderFrame(float magn, int xres, int yres,
 
    for (y = 0; y < yres; y++) {
       for (x = 0; x < xres; x++) {
-         cx = target_x - width >> 1 + x * xstep;
-         cy = target_y - height >> 1 + (yres - y) * ystep;
+         cx = target_x - width / 2 + x * xstep;
+         cy = target_y - height / 2 + (yres - y) * ystep;
          zx = checkX = SEEDX;
          zy = checkY = SEEDY;
          clrR = clrG = clrB = 0;
@@ -79,7 +79,7 @@ void renderFrame(float magn, int xres, int yres,
                zy2 = zy * zy;
                if (zx2 + zy2 > BAILOUT) {
                   degree = i - log(log(zx2 + zy2) / logBailout2) / LN_2;
-                  degree = (sin(degree / CYCLE) + 1) >> 1;
+                  degree = (sin(degree / CYCLE) + 1) / 2;
                   hue = degree + HUE_SHIFT;
                   hue = fmod(hue, 1.0);
                   brightness = degree * BRIGHTNESS_RANGE + BRIGHTNESS_MIN;
