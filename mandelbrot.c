@@ -4,7 +4,14 @@
 /*****************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+
+#define ARG_COUNT 3
+
+/* Image parameters */
+#define XRES 1920
+#define YRES 1080
 
 /* Fractal parameters */
 #define BAILOUT 9.1
@@ -24,51 +31,83 @@
 /* Constants */
 #define LN_2 0.693147181
 
-void renderFrame(float magn, int xres, int yres,
- long double target_x, long double target_y);
+struct pixel {
+   unsigned char r;
+   unsigned char g;
+   unsigned char b;
+};
+
+struct frame {
+   long double x;
+   long double y;
+   float magn;
+};
+
+void renderFrame(FILE *output, struct frame *frame);
 int isInMainBulbs(long double a, long double b2);
 unsigned char averageValue(unsigned char a,
  unsigned char b, unsigned char c, unsigned char d);
 void HSVtoRGB( float *r, float *g, float *b, float h, float s, float v );
 
-int main() {
-   int xres, yres;
-   float magn;
-   long double target_x, target_y;
-   scanf("%f%d%d%Lf%Lf", &magn, &xres, &yres, &target_x, &target_y);
-   renderFrame(magn, xres, yres, target_x, target_y);
+int main(int argc, char **argv) {
+   struct frame frame;
+   FILE *output;
+   
+   if (argc != 2) {
+      fprintf(stderr, "Please specify output file\n");
+      return 1;
+   }
+   
+   if ((output = fopen(argv[1], "w")) == NULL) {
+      perror("fopen");
+      return 1;
+   }
+   
+   if (scanf("%f%Lf%Lf", &frame.magn, &frame.x, &frame.y) != ARG_COUNT) {
+      perror("scanf");
+      return 1;
+   }
+   
+   renderFrame(output, &frame);
    return 0;
 }
 
-void renderFrame(float magn, int xres, int yres,
- long double target_x, long double target_y) {
-   int x, y, i, iters, lastPixelBlack, period;
+void renderFrame(FILE *output, struct frame *frame) {
+   int x, y, i, iters, lastPixelBlack = 0, period;
    float degree, clrR, clrG, clrB, hue, brightness, logBailout2, checkX, checkY;
    long double cx, cy, zx, zy, xstep, ystep, 
     zx2, zy2, width, height;
-   unsigned char image[xres * 2][yres * 2][3];
+   int xres, yres;
+   struct pixel *image;
+   
+   if ((image = malloc(XRES * YRES * 4 * sizeof(struct pixel))) == NULL) {
+      perror("malloc");
+      exit(1);
+   }
+   
+   xres = XRES * 2;
+   yres = YRES * 2;
 
-   printf("P6\n");
-   printf("%d %d\n", xres, yres);
-   printf("%d\n", COLORS);
+   fprintf(output, "P6\n");
+   fprintf(output, "%d %d\n", XRES, YRES);
+   fprintf(output, "%d\n", COLORS);
    
-   xres += xres;
-   yres += yres;
+   iters = 1000 + 50 * sqrt(frame->magn);
    
-   iters = 1000 + 50 * sqrt(magn);
-   
-   width = DEFAULT_WIDTH * 1.0 / magn;
-   height = DEFAULT_WIDTH * (1.0 * yres / xres) / magn;
+   width = DEFAULT_WIDTH * 1.0 / frame->magn;
+   height = DEFAULT_WIDTH * (1.0 * yres / xres) / frame->magn;
 
    xstep = width / xres;
    ystep = height / yres;
    
    logBailout2 = log(BAILOUT) * 2;
+   
+   printf("Rendering...\n");
 
    for (y = 0; y < yres; y++) {
       for (x = 0; x < xres; x++) {
-         cx = target_x - width / 2 + x * xstep;
-         cy = target_y - height / 2 + (yres - y) * ystep;
+         cx = frame->x - width / 2 + x * xstep;
+         cy = frame->y - height / 2 + (yres - y) * ystep;
          zx = checkX = SEEDX;
          zy = checkY = SEEDY;
          clrR = clrG = clrB = 0;
@@ -98,22 +137,34 @@ void renderFrame(float magn, int xres, int yres,
                }
             }
          }
+         
          lastPixelBlack = clrR + clrG + clrB == 0;
-         image[x][y][0] = clrR * COLORS;
-         image[x][y][1] = clrG * COLORS;
-         image[x][y][2] = clrB * COLORS;
+         image[y * xres + x].r = clrR * COLORS;
+         image[y * xres + x].g = clrG * COLORS;
+         image[y * xres + x].b = clrB * COLORS;
       }
+      printf("%d%%\r", (int)(100.0 * y / yres));
+      fflush(stdout);
    }
-   
+   printf("Done\n");
    /* Resample and output */
    for (y = 0; y < yres; y += 2) {
       for (x = 0; x < xres; x += 2) {
-         for (i = 0; i <= 2; i++) {
-            printf("%c", averageValue(image[x][y][i], image[x + 1][y][i],
-             image[x][y + 1][i], image[x + 1][y + 1][i]));
-         }
+         fprintf(output, "%c", averageValue(image[y * xres + x].r, 
+            image[(y + 1) * xres + x].r,
+            image[y * xres + x + 1].r, image[(y + 1) * xres + x + 1].r));
+         
+         fprintf(output, "%c", averageValue(image[y * xres + x].g, 
+            image[(y + 1) * xres + x].g,
+            image[y * xres + x + 1].g, image[(y + 1) * xres + x + 1].g));
+         
+         fprintf(output, "%c", averageValue(image[y * xres + x].b, 
+            image[(y + 1) * xres + x].b,
+            image[y * xres + x + 1].b, image[(y + 1) * xres + x + 1].b));
       }
    }
+   
+   free(image);
    
    return;
 }
