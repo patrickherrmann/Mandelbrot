@@ -19,6 +19,8 @@ bitmap_t *createBitmap(int width, int height);
 
 pixel_t *getPixel(bitmap_t *bitmap, int x, int y);
 
+void resample(bitmap_t *image, bitmap_t *resampled, int boxSize);
+
 void saveAsPPM(bitmap_t *bitmap, const char *filename);
 
 void bitmapGC(bitmap_t *bitmap);

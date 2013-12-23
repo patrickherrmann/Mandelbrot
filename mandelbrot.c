@@ -15,26 +15,29 @@
 #define DEFAULT_HEIGHT 600
 
 void printUsage() {
-   printf("Usage: mandelbrot [options] filename");
-   printf("\tr:\tReal component to center image\n");
-   printf("\ti:\tImaginary component to center image\n");
-   printf("\tm:\tMagnification");
-   printf("\tw:\tImage width");
-   printf("\th:\tImage height");
+   printf("Usage: mandelbrot [options] filename\n");
+   printf("\tr:\tReal component of center of image\n");
+   printf("\ti:\tImaginary component of center of image\n");
+   printf("\tm:\tMagnification\n");
+   printf("\tw:\tImage width\n");
+   printf("\th:\tImage height\n");
+   printf("\ts:\tResampling box size\n");
 }
 
 int main(int argc, char **argv) {
 
    frame_t frame;
    bitmap_t *bitmap;
+   bitmap_t *resampled;
    int width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
+   int s = 1;
    int opt;
 
    frame.x = 0;
    frame.y = 0;
    frame.magn = 1;
 
-   while ((opt = getopt(argc, argv, "w:h:y:r:i:m:")) != -1) {
+   while ((opt = getopt(argc, argv, "w:h:y:r:i:m:s:")) != -1) {
       switch (opt) {
          case 'w':
             sscanf(optarg, "%d", &width);
@@ -51,6 +54,9 @@ int main(int argc, char **argv) {
          case 'm':
             sscanf(optarg, "%f", &frame.magn);
             break;
+         case 's':
+            sscanf(optarg, "%d", &s);
+            break;
          case '?':
          default:
             printUsage();
@@ -63,13 +69,22 @@ int main(int argc, char **argv) {
       return 1;
    }
 
-   bitmap = createBitmap(width, height);
-   
+   bitmap = createBitmap(width * s, height * s);
    renderFrame(bitmap, &frame);
 
-   saveAsPPM(bitmap, argv[optind]);
+   if (s > 1) {
+      printf("Resampling...\n");
+      resampled = createBitmap(width, height);
+      resample(bitmap, resampled, s);
+      bitmapGC(bitmap);
+      printf("Done\n");
+   } else {
+      resampled = bitmap;
+   }
 
-   bitmapGC(bitmap);
+   saveAsPPM(resampled, argv[optind]);
+
+   bitmapGC(resampled);
 
    return 0;
 }
