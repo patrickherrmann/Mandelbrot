@@ -16,9 +16,11 @@
 
 void printUsage() {
    printf("Usage: mandelbrot [options] filename");
-   printf("\tr or x:\tReal component to center image\n");
-   printf("\ti or y:\tImaginary component to center image\n");
+   printf("\tr:\tReal component to center image\n");
+   printf("\ti:\tImaginary component to center image\n");
    printf("\tm:\tMagnification");
+   printf("\tw:\tImage width");
+   printf("\th:\tImage height");
 }
 
 int main(int argc, char **argv) {
@@ -32,19 +34,16 @@ int main(int argc, char **argv) {
    frame.y = 0;
    frame.magn = 1;
 
-   while ((opt = getopt(argc, argv, "hx:y:r:i:m:")) != -1) {
+   while ((opt = getopt(argc, argv, "w:h:y:r:i:m:")) != -1) {
       switch (opt) {
-         case 'h':
-            printUsage();
-            return 0;
-         case 'x':
+         case 'w':
             sscanf(optarg, "%d", &width);
+            break;
+         case 'h':
+            sscanf(optarg, "%d", &height);
             break;
          case 'r':
             sscanf(optarg, "%Lf", &frame.x);
-            break;
-         case 'y':
-            sscanf(optarg, "%d", &height);
             break;
          case 'i':
             sscanf(optarg, "%Lf", &frame.y);
