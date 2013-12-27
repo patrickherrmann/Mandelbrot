@@ -6,6 +6,7 @@
 typedef struct {
    long double x;
    long double y;
+   long double rotation;
    float magn;
 } frame_t;
 

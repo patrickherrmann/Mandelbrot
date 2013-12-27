@@ -37,7 +37,7 @@ void renderFrame(bitmap_t *bitmap, frame_t *frame) {
 
    int x, y, i, iters, lastPixelBlack = 0, period;
    float degree, clrR, clrG, clrB, hue, brightness, logBailout2, checkX, checkY;
-   long double cx, cy, zx, zy, xstep, ystep, zx2, zy2, width, height;
+   long double cx, cy, zx, zy, xstep, ystep, zx2, zy2, width, height, ct, st;
    pixel_t *pixel;
    
    iters = 1000 + 50 * sqrt(frame->magn);
@@ -47,6 +47,9 @@ void renderFrame(bitmap_t *bitmap, frame_t *frame) {
 
    xstep = width / bitmap->width;
    ystep = height / bitmap->height;
+
+   ct = cos(frame->rotation);
+   st = sin(frame->rotation);
    
    logBailout2 = log(BAILOUT) * 2;
    
@@ -55,8 +58,12 @@ void renderFrame(bitmap_t *bitmap, frame_t *frame) {
    for (y = 0; y < bitmap->height; y++) {
       for (x = 0; x < bitmap->width; x++) {
 
-         cx = frame->x - width / 2 + x * xstep;
-         cy = frame->y - height / 2 + (bitmap->height - y) * ystep;
+         zx = -width / 2 + x * xstep;
+         zy = -height / 2 + (bitmap->height - y) * ystep;
+
+         cx = zx * ct - zy * st + frame->x;
+         cy = zx * st + zy * ct + frame->y;
+
          zx = checkX = SEEDX;
          zy = checkY = SEEDY;
          clrR = clrG = clrB = 0;

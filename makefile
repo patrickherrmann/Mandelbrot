@@ -1,7 +1,7 @@
 CC=gcc
 FLAGS=-O3 -Wall -pedantic
 OBJS=render.o hsv2rgb.o bitmap.o
-EXES=mandelbrot
+EXES=mandelbrot animator
 
 all: $(EXES)
 
@@ -10,6 +10,9 @@ all: $(EXES)
 
 mandelbrot: mandelbrot.c $(OBJS)
 	$(CC) $(FLAGS) mandelbrot.c $(OBJS) -lm -o mandelbrot
+
+animator: animator.c $(OBJS)
+	$(CC) $(FLAGS) animator.c $(OBJS) -lm -o animator
 
 clean:
 	rm $(OBJS) $(EXES)

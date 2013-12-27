@@ -1,6 +1,7 @@
 *.ppm
 *.png
 mandelbrot
+animator
 frame*
 *~
 coords*
