@@ -1,0 +1,1 @@
+time ./mandelbrot -r -.743643887037151 -i .131825904205330 -m 9e4 -t 0 -w 2560 -h 1600 -s 4 output.ppm
